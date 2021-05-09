@@ -6,25 +6,19 @@
 [![tests](https://github.com/haesleinhuepf/napari-image-quality-analyzer/workflows/tests/badge.svg)](https://github.com/haesleinhuepf/napari-image-quality-analyzer/actions)
 [![codecov](https://codecov.io/gh/haesleinhuepf/napari-image-quality-analyzer/branch/master/graph/badge.svg)](https://codecov.io/gh/haesleinhuepf/napari-image-quality-analyzer)
 
-Anlyze image quality
+Anlyze image quality within napari
 
 ----------------------------------
 
 This [napari] plugin was generated with [Cookiecutter] using with [@napari]'s [cookiecutter-napari-plugin] template.
 
-<!--
-Don't miss the full getting started guide to set up your new package:
-https://github.com/napari/cookiecutter-napari-plugin#getting-started
-
-and review the napari docs for plugin developers:
-https://napari.org/docs/plugins/index.html
--->
-
 ## Installation
 
 You can install `napari-image-quality-analyzer` via [pip]:
 
-    pip install napari-image-quality-analyzer
+    git clone https://github.com/haesleinhuepf/napari-image-quality-analyzer.git
+    cd napari-image-quality-analyzer
+    pip install -e .
 
 ## Contributing
 
