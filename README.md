@@ -6,7 +6,8 @@
 [![tests](https://github.com/haesleinhuepf/napari-image-quality-analyzer/workflows/tests/badge.svg)](https://github.com/haesleinhuepf/napari-image-quality-analyzer/actions)
 [![codecov](https://codecov.io/gh/haesleinhuepf/napari-image-quality-analyzer/branch/master/graph/badge.svg)](https://codecov.io/gh/haesleinhuepf/napari-image-quality-analyzer)
 
-Anlyze image quality within napari
+Anlyze image quality within napari. Together with [napari-webcam](https://pypi.org/project/napari-webcam/) and a cat it's real fun:
+![](images/image_quality_napari.gif)
 
 ----------------------------------
 
