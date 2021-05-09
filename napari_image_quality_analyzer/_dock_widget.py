@@ -7,35 +7,85 @@ see: https://napari.org/docs/dev/plugins/hook_specifications.html
 Replace code below according to your needs.
 """
 from napari_plugin_engine import napari_hook_implementation
-from qtpy.QtWidgets import QWidget, QHBoxLayout, QPushButton
-from magicgui import magic_factory
+from qtpy.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
+from ._function import determine_quality
+from napari import Viewer
 
 
-class ExampleQWidget(QWidget):
-    # your QWidget.__init__ can optionally request the napari viewer instance
-    # in one of two ways:
-    # 1. use a parameter called `napari_viewer`, as done here
-    # 2. use a type annotation of 'napari.viewer.Viewer' for any parameter
-    def __init__(self, napari_viewer):
-        super().__init__()
-        self.viewer = napari_viewer
-
-        btn = QPushButton("Click me!")
-        btn.clicked.connect(self._on_click)
-
-        self.setLayout(QHBoxLayout())
-        self.layout().addWidget(btn)
-
-    def _on_click(self):
-        print("napari has", len(self.viewer.layers), "layers")
+def thread_worker(args):
+    pass
 
 
-@magic_factory
-def example_magic_widget(img_layer: "napari.layers.Image"):
-    print(f"you have selected {img_layer}")
+class ImageQualityPanel(QWidget):
+    """
+    The image quality panel is a Widget in the user interface that
+    shows visually how high the image quality is at the moment.
+    """
+    def __init__(self, napari_viewer: Viewer):
 
+        super().__init__(napari_viewer.window.qt_viewer)
+        self._viewer = napari_viewer
+
+        self.setObjectName("Image quality")
+
+        # setup user interface
+        self.label = QLabel("0")
+        font = self.label.font()
+        font.setPointSize(30)
+        self.label.setFont(font)
+
+        self.reset_button = QPushButton("Reset")
+        self.reset_button.clicked.connect(self._reset)
+
+        self.setLayout(QHBoxLayout(self))
+        self.layout().addWidget(self.label)
+        self.layout().addWidget(self.reset_button)
+        self.layout().addStretch()
+
+        # initial state
+        self._reset()
+
+        # threading
+        # https://napari.org/guides/stable/threading.html
+        @thread_worker
+        def loop_run():
+            while self._viewer.window.qt_viewer:  # loop until napari closes
+                # get currently active layer
+                selected_layers = self._viewer.layers.selection
+                if len(selected_layers) > 0:
+                    # measure quality and update GUI
+                    quality = determine_quality(selected_layers.active.data)
+                    self._update_quality(quality)
+
+                time.sleep(0.1)
+
+        # Start the loop
+        worker = loop_run()
+        worker.start()
+
+    def _reset(self):
+        self.best_quality = 0
+
+    def _update_quality(self, quality):
+        """
+        Updates the image quality display
+        """
+        if self.best_quality < quality:
+            self.best_quality = quality
+
+        # put current quality in label
+        self.label.setText(str(quality)[0:5])
+
+        # color label according to quality
+        ratio_to_best = quality / self.best_quality
+        if ratio_to_best > 0.9:
+            self.label.setStyleSheet("QLabel { color : green }")
+        elif ratio_to_best > 0.5:
+            self.label.setStyleSheet("QLabel { color : yellow }")
+        else:
+            self.label.setStyleSheet("QLabel { color : red }")
 
 @napari_hook_implementation
 def napari_experimental_provide_dock_widget():
     # you can return either a single widget, or a sequence of widgets
-    return [ExampleQWidget, example_magic_widget]
+    return [ImageQualityPanel]
