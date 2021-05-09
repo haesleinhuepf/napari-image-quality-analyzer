@@ -6,6 +6,7 @@ see: https://napari.org/docs/dev/plugins/hook_specifications.html
 
 Replace code below according to your needs.
 """
+import warnings
 from typing import TYPE_CHECKING
 
 from enum import Enum
@@ -22,27 +23,14 @@ def napari_experimental_provide_function():
     # we can return a single function
     # or a tuple of (function, magicgui_options)
     # or a list of multiple functions with or without options, as shown here:
-    return [threshold, image_arithmetic]
+    return [determine_quality]
 
+def determine_quality(image : ImageData):
+    """
+    Computes quality of an image as single number.
+    """
+    quality = np.std(image)
+    print("Quality (standard deviation):", quality)
+    warnings.warn("Quality (standard deviation): " + str(quality))
+    return quality
 
-# 1.  First example, a simple function that thresholds an image and creates a labels layer
-def threshold(data: ImageData, threshold: int) -> LabelsData:
-    """Threshold an image and return a mask."""
-    return (data > threshold).astype(int)
-
-
-# 2. Second example, a function that adds, subtracts, multiplies, or divides two layers
-
-# using Enums is a good way to get a dropdown menu.  Used here to select from np functions
-class Operation(Enum):
-    add = np.add
-    subtract = np.subtract
-    multiply = np.multiply
-    divide = np.divide
-
-
-def image_arithmetic(
-    layerA: "ImageData", operation: Operation, layerB: "ImageData"
-) -> "LayerDataTuple":
-    """Adds, subtracts, multiplies, or divides two same-shaped image layers."""
-    return (operation.value(layerA, layerB), {"colormap": "turbo"})
