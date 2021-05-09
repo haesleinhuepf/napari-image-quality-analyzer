@@ -10,11 +10,9 @@ from napari_plugin_engine import napari_hook_implementation
 from qtpy.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
 from ._function import determine_quality
 from napari import Viewer
-
-
-def thread_worker(args):
-    pass
-
+from napari._qt.qthreading import thread_worker
+import time
+import numpy as np
 
 class ImageQualityPanel(QWidget):
     """
@@ -54,13 +52,14 @@ class ImageQualityPanel(QWidget):
                 selected_layers = self._viewer.layers.selection
                 if len(selected_layers) > 0:
                     # measure quality and update GUI
-                    quality = determine_quality(selected_layers.active.data)
-                    self._update_quality(quality)
+                    quality = np.std(selected_layers.active.data)
+                    yield quality
 
                 time.sleep(0.1)
 
         # Start the loop
         worker = loop_run()
+        worker.yielded.connect(self._update_quality)
         worker.start()
 
     def _reset(self):
